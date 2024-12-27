@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Game</title>
+    <style>
+        body {
+            background-color: rgb(255, 251, 224);
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        .game-board {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            width: 900px;
+        }
+
+        .card {
+            width: 150px;
+            height: 180px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f2f2f2;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            transform: rotateY(180deg);
+        }
+
+        .card img {
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            position: absolute;
+        }
+
+        .card .back {
+            transform: rotateY(180deg);
+        }
+
+        .card.flipped {
+            transform: rotateY(0deg);
+        }
+
+        .card.matched {
+            opacity: 0.5;
+        }
+
+        .button-container {
+            margin-top: 20px;
+        }
+
+        .button-container button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h2>Memory Game</h2>
+    
+    <div id="game-board" class="game-board"></div>
+
+    <div class="button-container">
+        <button id="refresh-btn">Обновить</button>
+        <button id="show-all-btn">Показать все карты</button>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            let cardNames = ['1.png', '2.png', '3.png', '4.png', '5.png'];
+            const gameBoard = $('#game-board');
+            let cards = [...cardNames, ...cardNames];
+            let flippedCards = [];
+            let matchedCards = 0;
+
+            function startGame() {
+                gameBoard.empty();
+                flippedCards = [];
+                matchedCards = 0;
+                shuffle(cards);
+                cards.forEach((cardName) => {
+                    const card = $('<div class="card"></div>');
+                    const front = $('<img class="front" src="' + cardName + '">');
+                    const back = $('<img class="back" src="b.png">');
+
+                    card.append(back).append(front);
+                    gameBoard.append(card);
+
+                    card.on('click', function() {
+                        if ($(this).hasClass('flipped') || flippedCards.length === 2) {
+                            return;
+                        }
+
+                        $(this).toggleClass('flipped');
+                        flippedCards.push($(this));
+
+                        if (flippedCards.length === 2) {
+                            const [card1, card2] = flippedCards;
+                            if (card1.find('.front').attr('src') === card2.find('.front').attr('src')) {
+                                card1.add(card2).addClass('matched');
+                                matchedCards += 2;
+                            } else {
+                                setTimeout(() => {
+                                    card1.removeClass('flipped');
+                                    card2.removeClass('flipped');
+                                }, 1000);
+                            }
+                            flippedCards = [];
+
+                            if (matchedCards === cards.length) {
+                                alert("Вы победили!");
+                            }
+                        }
+                    });
+                });
+            }
+
+            function shuffle(array) {
+                array.sort(() => Math.random() - 0.5);
+            }
+
+            $('#refresh-btn').on('click', function() {
+                startGame();
+            });
+
+            $('#show-all-btn').on('click', function() {
+                $('.card').each(function() {
+                    $(this).addClass('flipped').css('opacity', '0.5');
+                });
+            });
+
+            startGame();
+        });
+    </script>
+</body>
+</html>
